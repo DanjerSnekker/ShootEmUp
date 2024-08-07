@@ -1,0 +1,22 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "{6A09A984-4850-6BA7-6790-CDA7F7D6093B}",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "CH_GoWClone",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "ModelingToolsEditorMode",
+			"Enabled": true,
+			"TargetAllowList": [
+				"Editor"
+			]
+		}
+	]
+}
