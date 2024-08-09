@@ -1,3 +1,5 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
 #pragma once
 
 #include "CoreMinimal.h"
@@ -16,15 +18,6 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	UPROPERTY(EditAnywhere)
-	class UCameraComponent* Camera;
-
-	void MoveForward(float InputVal);
-	void MoveRight(float InputVal);
-
-	void Turn(float InputVal);
-	void LookUp(float InputVal);
 
 public:	
 	// Called every frame
