@@ -47,8 +47,44 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Enhanced Input")
 	class UInputAction* CharaLook;
 
+	UPROPERTY(EditAnywhere, Category = "Enhanced Input")
+	class UInputAction* CharaSprint;
+
 	void MoveChara(const FInputActionValue& InputValue);
 	void LookChara(const FInputActionValue& InputValue);
 	void JumpChara();
+
+	//Sprint Code
+	void StartSprint();
+	void EndSprint();
+
+	UPROPERTY(EditAnywhere, Category = "Chara Movement")
+	float WalkSpeed = 600;
+
+	UPROPERTY(EditAnywhere, Category = "Chara Movement")
+	float RunSpeed = 1000;
+
+	bool bIsRunning;
+
+	//Stamina Code
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Chara Movement")
+	float MaxStamina = 100;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Chara Movement")
+	float CurrentStamina = 100;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Chara Movement")
+	float StaminaDrainTime;
+
+	UPROPERTY(EditAnywhere, Category = "Chara Movement")
+	float StaminaRefillTime;
+
+	UPROPERTY(EditAnywhere, Category = "Chara Movement")
+	float DelayBeforeRefill;
+
+	float CurrentRefillDelayTime;
+	bool bHasStamina;
+
+	void UpdateStamina();
 //-------------------------MY CODE-------------------------
 };

@@ -9,7 +9,7 @@
 // Sets default values
 AChara::AChara()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	//Initialize SpringArm
@@ -23,7 +23,7 @@ AChara::AChara()
 
 	//Ensures camera rotation will rotate the character.
 	bUseControllerRotationYaw = true;
-	
+
 	//Ensures character doesn't rotate based on movement direction.
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 }
@@ -32,7 +32,7 @@ AChara::AChara()
 void AChara::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
 // Called every frame
@@ -40,6 +40,7 @@ void AChara::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	UpdateStamina();
 }
 
 // Called to bind functionality to input
@@ -65,6 +66,9 @@ void AChara::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		Input->BindAction(CharaLook, ETriggerEvent::Triggered, this, &AChara::LookChara);
 
 		Input->BindAction(CharaJump, ETriggerEvent::Triggered, this, &AChara::JumpChara);
+
+		Input->BindAction(CharaSprint, ETriggerEvent::Triggered, this, &AChara::StartSprint);
+		Input->BindAction(CharaSprint, ETriggerEvent::Completed, this, &AChara::EndSprint);
 	}
 }
 
@@ -101,6 +105,59 @@ void AChara::LookChara(const FInputActionValue& InputValue)
 void AChara::JumpChara()
 {
 	AChara::Jump();
+}
+
+void AChara::StartSprint()
+{
+	if (bHasStamina)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+
+		if (GetVelocity().Size() >= 0.5)
+		{
+			bIsRunning = true;
+		}
+		else
+		{
+			bIsRunning = false;
+		}
+	}
+}
+
+void AChara::EndSprint()
+{
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	bIsRunning = false;
+}
+
+void AChara::UpdateStamina()
+{
+	//Drain Stamina
+	if (bIsRunning)
+	{
+		CurrentStamina -= StaminaDrainTime;
+		CurrentRefillDelayTime = DelayBeforeRefill;
+	}
+
+	if (!bIsRunning && CurrentStamina < MaxStamina)
+	{
+		CurrentRefillDelayTime--;
+
+		if (CurrentRefillDelayTime <= 0)
+		{
+			CurrentStamina += StaminaRefillTime;
+		}
+	}
+
+	if (CurrentStamina <= 0)
+	{
+		bHasStamina = false;
+		EndSprint();
+	}
+	else
+	{
+		bHasStamina = true;
+	}
 }
 
 
