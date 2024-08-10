@@ -86,5 +86,24 @@ protected:
 	bool bHasStamina;
 
 	void UpdateStamina();
+
+	//Shooting Weapon Code
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+	class AGun* CurrentWeapon;
+
+	UPROPERTY(EditAnywhere, Category = "Enhanced Input")
+	class UInputAction* CharaShoot;
+
+	UPROPERTY(EditAnywhere, Category = "Enhanced Input")
+	class UInputAction* CharaReload;
+
+	UPROPERTY(EditAnywhere, Category = "Enhanced Input")
+	class UInputAction* CharaAim;
+
+	void ShootWeapon();
+
+	void ReloadWeapon();
+
+	void AimWeapon();
 //-------------------------MY CODE-------------------------
 };

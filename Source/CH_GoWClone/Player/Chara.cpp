@@ -5,6 +5,7 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "CH_GoWClone/Weapon/Gun.h"
 
 // Sets default values
 AChara::AChara()
@@ -26,6 +27,9 @@ AChara::AChara()
 
 	//Ensures character doesn't rotate based on movement direction.
 	GetCharacterMovement()->bOrientRotationToMovement = false;
+
+
+
 }
 
 // Called when the game starts or when spawned
@@ -68,7 +72,11 @@ void AChara::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		Input->BindAction(CharaJump, ETriggerEvent::Triggered, this, &AChara::JumpChara);
 
 		Input->BindAction(CharaSprint, ETriggerEvent::Triggered, this, &AChara::StartSprint);
+
 		Input->BindAction(CharaSprint, ETriggerEvent::Completed, this, &AChara::EndSprint);
+
+		Input->BindAction(CharaShoot, ETriggerEvent::Completed, this, &AChara::ShootWeapon);
+
 	}
 }
 
@@ -158,6 +166,32 @@ void AChara::UpdateStamina()
 	{
 		bHasStamina = true;
 	}
+}
+
+void AChara::ShootWeapon()
+{
+	//Add reference to gun class and call the corresponding function
+
+	//Adding some info for raytracing.
+	const FVector StartTrace = Cam->GetComponentLocation();
+
+	float Range = CurrentWeapon->WeaponRange;
+
+	const FVector EndTrace = (Cam->GetForwardVector() * Range) + StartTrace;
+
+	CurrentWeapon->Shoot(StartTrace, EndTrace);
+}
+
+void AChara::ReloadWeapon()
+{
+	//Add reference to gun class and call the corresponding function
+
+}
+
+void AChara::AimWeapon()
+{
+	//Add reference to gun class and call the corresponding function
+
 }
 
 
