@@ -6,6 +6,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "CH_GoWClone/Weapon/Gun.h"
+#include "Blueprint/UserWidget.h"
 
 // Sets default values
 AChara::AChara()
@@ -37,6 +38,38 @@ void AChara::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (PlayerHUD != nullptr)
+	{
+		UUserWidget* HUD = CreateWidget<UUserWidget>(Cast<APlayerController>(GetController()), PlayerHUD);
+		HUD->AddToViewport(9999);
+	}
+
+	for (const TSubclassOf<AGun>& GunClass : DefaultWeapons)
+	{
+		if (!GunClass) continue;
+
+		FActorSpawnParameters Params;
+		Params.Owner = this;
+		AGun* SpawnedWeapon = GetWorld()->SpawnActor<AGun>(GunClass, Params);
+
+		const int index = Weapons.Add(SpawnedWeapon);
+
+		if (index == CurrentIndex)
+		{
+			CurrentWeapon = SpawnedWeapon;
+			
+			if (!CurrentWeapon->CurrentOwner)
+			{
+				const FTransform& WeaponSlotTransform = CurrentWeapon->PlacementTransform * GetMesh()->GetSocketTransform(FName("ik_hand_gun"));
+				CurrentWeapon->SetActorTransform(WeaponSlotTransform, false, nullptr, ETeleportType::TeleportPhysics);
+				CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepWorldTransform, FName("ik_hand_gun"));
+
+				CurrentWeapon->WeaponMesh->SetVisibility(true);
+				CurrentWeapon->CurrentOwner = this;
+			}
+		}
+
+	}
 }
 
 // Called every frame
@@ -45,6 +78,11 @@ void AChara::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	UpdateStamina();
+
+	TotalAmmo = CurrentWeapon->CurrentAmmoCount;
+
+	CurrentAmmo = CurrentWeapon->CurrentBulletCount;
+
 }
 
 // Called to bind functionality to input
@@ -76,6 +114,8 @@ void AChara::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		Input->BindAction(CharaSprint, ETriggerEvent::Completed, this, &AChara::EndSprint);
 
 		Input->BindAction(CharaShoot, ETriggerEvent::Completed, this, &AChara::ShootWeapon);
+
+		Input->BindAction(CharaReload, ETriggerEvent::Completed, this, &AChara::ReloadWeapon);
 
 	}
 }
@@ -170,7 +210,16 @@ void AChara::UpdateStamina()
 
 void AChara::ShootWeapon()
 {
-	//Add reference to gun class and call the corresponding function
+	if (m_pShootMontage != NULL)
+	{
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+		if (AnimInstance != nullptr)
+		{
+			AnimInstance->Montage_Play(m_pShootMontage, 1.0f);
+		}
+	}
+
 
 	//Adding some info for raytracing.
 	const FVector StartTrace = Cam->GetComponentLocation();
@@ -180,12 +229,13 @@ void AChara::ShootWeapon()
 	const FVector EndTrace = (Cam->GetForwardVector() * Range) + StartTrace;
 
 	CurrentWeapon->Shoot(StartTrace, EndTrace);
+
 }
 
 void AChara::ReloadWeapon()
 {
 	//Add reference to gun class and call the corresponding function
-
+	CurrentWeapon->Reload();
 }
 
 void AChara::AimWeapon()

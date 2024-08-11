@@ -3,6 +3,7 @@
 
 #include "CH_GoWClone/Weapon/Gun.h"
 #include <Kismet/GameplayStatics.h>
+#include "CH_GoWClone/Player/Chara.h"
 
 
 // Sets default values
@@ -11,6 +12,11 @@ AGun::AGun()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	Root = CreateDefaultSubobject<USceneComponent>(FName("Root"));
+	RootComponent = Root;
+
+	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>("WeaponCone");
+	WeaponMesh->SetupAttachment(Root);
 	//Spawn the gun in the player's hands, whereever the socket is. 
 
 }
@@ -61,7 +67,7 @@ void AGun::Shoot(const FVector& StartTrace, const FVector& EndTrace)
 	//Muzzle VFX code
 	if (MuzzleParticles != NULL)
 	{
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzleParticles, GunMesh->GetSocketTransform(FName("Muzzle")));
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzleParticles, CurrentOwner->GetMesh()->GetSocketTransform(FName("Muzzle")));
 	}
 
 	//SFX code
@@ -73,7 +79,7 @@ void AGun::Shoot(const FVector& StartTrace, const FVector& EndTrace)
 	//Anim code
 	if (FireAnimation != NULL)
 	{
-		UAnimInstance* AnimInstance = GunMesh->GetAnimInstance();
+		UAnimInstance* AnimInstance = CurrentOwner->GetMesh()->GetAnimInstance();
 		if (AnimInstance != NULL)
 		{
 			AnimInstance->Montage_Play(FireAnimation, 1.0f);
@@ -85,6 +91,18 @@ void AGun::Shoot(const FVector& StartTrace, const FVector& EndTrace)
 void AGun::Reload()
 {
 	//Play a reload animation.
+	if (CurrentAmmoCount != 0)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, "Reloading");
+		CurrentBulletCount = MaxBulletsInMagazine;
+		CurrentAmmoCount -= CurrentBulletCount;
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, "Reload Complete");
+
+		if (CurrentAmmoCount <= 0)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, "No More Ammo Reserves");
+		}
+	}
 
 	//Check if the animation is done playing.
 		//If yes, then reset the CurrentBulletCount to be equal to MaxBulletCount.
