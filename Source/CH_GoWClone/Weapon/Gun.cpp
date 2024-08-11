@@ -4,6 +4,7 @@
 #include "CH_GoWClone/Weapon/Gun.h"
 #include <Kismet/GameplayStatics.h>
 #include "CH_GoWClone/Player/Chara.h"
+#include "CH_GoWClone/Enemy/Enemy.h"
 
 
 // Sets default values
@@ -15,7 +16,7 @@ AGun::AGun()
 	Root = CreateDefaultSubobject<USceneComponent>(FName("Root"));
 	RootComponent = Root;
 
-	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>("WeaponCone");
+	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>("Weapon");
 	WeaponMesh->SetupAttachment(Root);
 	//Spawn the gun in the player's hands, whereever the socket is. 
 
@@ -39,17 +40,30 @@ void AGun::Tick(float DeltaTime)
 void AGun::Shoot(const FVector& StartTrace, const FVector& EndTrace)
 {
 	//RayCast Code
-	FHitResult Hit;
+	FHitResult* Hit = new FHitResult();
 
 	FCollisionQueryParams QueryParams;
 	QueryParams.AddIgnoredActor(this);
 	QueryParams.bTraceComplex = false;
 
-	if (GetWorld()->LineTraceSingleByChannel(Hit, StartTrace, EndTrace, ECC_Visibility, QueryParams))
+	if (GetWorld()->LineTraceSingleByChannel(*Hit, StartTrace, EndTrace, ECC_Visibility, QueryParams))
 	{
 		if (ImpactParticles != NULL)
 		{
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, FTransform(Hit.ImpactNormal.Rotation(), Hit.ImpactPoint));
+			//UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, FTransform(Hit.ImpactNormal.Rotation(), Hit.ImpactPoint));
+		}
+		else
+		{
+			DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor::Emerald, false, 2.0f);
+		}
+
+		AEnemy* HitEnemy = Cast<AEnemy>(Hit->GetActor());
+
+		if (HitEnemy != NULL && !HitEnemy->IsPendingKillPending())
+		{
+			HitEnemy->DamageEnemy(DamagePerShot);
+			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Blue, "Hit Enemy");
+
 		}
 	}
 
